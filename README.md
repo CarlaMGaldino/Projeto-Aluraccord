@@ -1,5 +1,7 @@
 # ALURACCORD
-## Projeto imerssão React Alura
+## Projeto imersão React Alura
+
+@alura @cmariosouto @peas
 
 
 <div align="center">
