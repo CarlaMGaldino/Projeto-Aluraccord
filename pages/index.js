@@ -92,7 +92,7 @@ export default function PaginaInicial() {
               {appConfig.name}
             </Text>
 
-            <input
+            {/* <input
               type="text"
               value={username}
               onChange={function (event) {
@@ -104,19 +104,21 @@ export default function PaginaInicial() {
                 setUsername(valor);
                 //validando o formulario
               }}
-            />
-
-            {/* <TextField
-              fullWidth
-              textFieldColors={{
-                neutral: {
-                  textColor: appConfig.theme.colors.neutrals[200],
-                  mainColor: appConfig.theme.colors.neutrals[900],
-                  mainColorHighlight: appConfig.theme.colors.primary[500],
-                  backgroundColor: appConfig.theme.colors.neutrals[800],
-                },
-              }}
             /> */}
+
+            {
+              <TextField
+                fullWidth
+                textFieldColors={{
+                  neutral: {
+                    textColor: appConfig.theme.colors.neutrals[200],
+                    mainColor: appConfig.theme.colors.neutrals[900],
+                    mainColorHighlight: appConfig.theme.colors.primary[500],
+                    backgroundColor: appConfig.theme.colors.neutrals[800],
+                  },
+                }}
+              />
+            }
             <Button
               type="submit"
               label="Entrar"

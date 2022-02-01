@@ -9,17 +9,20 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5v
 const SUPABASE_URL = "https://rhfyhqmvablalthxathu.supabase.co";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+  return supabaseClient
+    .from("mensagens")
+    .on("INSERT", (respostaLive) => {
+      adicionaMensagem(respostaLive.new);
+    })
+    .subscribe();
+}
+
 export default function ChatPage() {
   const roteamento = useRouter();
   const usuarioLogado = roteamento.query.username;
   const [mensagem, setMensagem] = React.useState("");
-  const [listaDeMensagens, setListaDeMensagens] = React.useState([
-    {
-      id: 1,
-      de: "CarlaMGaldino",
-      texto: ":sticker",
-    },
-  ]);
+  const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
 
   React.useEffect(() => {
     supabaseClient
@@ -27,9 +30,30 @@ export default function ChatPage() {
       .select("*")
       .order("id", { ascending: false })
       .then(({ data }) => {
-        console.log("Dados da consulta: data");
+        console.log("Dados da consulta:", data);
+        // console.log('Dados da consulta:', data);
         setListaDeMensagens(data);
       });
+
+    const subscription = escutaMensagensEmTempoReal((novaMensagem) => {
+      console.log("Nova mensagem:", novaMensagem);
+      console.log("listaDeMensagens:", listaDeMensagens);
+      // Quero reusar um valor de referencia (objeto/array)
+      // Passar uma função pro setState
+
+      // setListaDeMensagens([
+      //     novaMensagem,
+      //     ...listaDeMensagens
+      // ])
+      setListaDeMensagens((valorAtualDaLista) => {
+        console.log("valorAtualDaLista:", valorAtualDaLista);
+        return [novaMensagem, ...valorAtualDaLista];
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   function handleNovaMensagem(novaMensagem) {
@@ -41,11 +65,13 @@ export default function ChatPage() {
 
     supabaseClient
       .from("mensagens")
-      .insert([mensagem])
+      .insert([
+        // Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
+        mensagem,
+      ])
       .then(({ data }) => {
         console.log("Criando mensagem: ", data);
         setListaDeMensagens([data[0], ...listaDeMensagens]);
-        setMensagem("");
       });
 
     setMensagem("");
@@ -132,7 +158,13 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
-            <ButtonSendSticker />
+            {/* CallBack */}
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                // console.log('[USANDO O COMPONENTE] Salva esse sticker no banco', sticker);
+                handleNovaMensagem(":sticker: " + sticker);
+              }}
+            />
           </Box>
         </Box>
       </Box>
@@ -207,6 +239,8 @@ function MessageList(props) {
               </Text>
             </Box>
             {mensagem.texto}
+
+            {mensagem.texto.startsWith(":sticker:") ? <Image src={mensagem.texto.replace(":sticker:", "")} /> : mensagem.texto}
           </Text>
         );
       })}
